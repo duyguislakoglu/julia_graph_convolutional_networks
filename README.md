@@ -6,7 +6,7 @@ Thomas N. Kipf, Max Welling. 2017, [<span class="underline">Semi-supervised Clas
 
 [<span class="underline">https://github.com/tkipf/pygcn</span>](https://github.com/tkipf/pygcn)
 
-**Datasets:**![](name//media/image1.png)
+**Datasets:**![](/media/image1.png)
 
 **1-** [<span class="underline">Citeseer</span>](https://github.com/kimiyoung/planetoid/tree/master/data)
 
@@ -90,25 +90,25 @@ Not given.
 
 > **1- Citeseer**
 
-![](name//media/image2.png)
+![](media/image2.png)
 
 > **2- Cora**
 
-![](name//media/image4.png)
+![](media/image4.png)
 
 **3- PubMed**
 
-![](name//media/image6.png)
+![](media/image6.png)
 
 > **4- NELL**
 
-![](name//media/image3.png)
+![](media/image3.png)
 
 **Ablation Study**
 
 > The authors start with a baseline system and add these ideas one at a time to show what the impact is.
 
-The definition of a convolution of a signal x with a filter gθ′:![](name//media/image5.png)
+The definition of a convolution of a signal x with a filter gθ′:![](media/image5.png)
 
   - > Limited the layer-wise convolution operation to K = 1
 
@@ -144,7 +144,7 @@ The effect
 
 The effect
 
-  - > Avoided the numerical instabilities and exploding/vanishing gradients when used in a deep neural network model due to repeated application of the convolution operator.![](name//media/image7.png)
+  - > Avoided the numerical instabilities and exploding/vanishing gradients when used in a deep neural network model due to repeated application of the convolution operator.![](media/image7.png)
 
 **Supplementary**
 
