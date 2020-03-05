@@ -26,8 +26,11 @@ model = GCN(nfeat=size(features,2),
             pdrop = args.pdrop)
 
 dtrn = features[idx_train]
+atrn = adj[idx_train]
 dval = features[idx_val]
+aval = adj[idx_val]
 dtst = features[idx_test]
+atst = adj[idx_test]
 
 function train_results(model, dtrn, dval, epoch, lr)
     training = adam(model, ncycle(dtrn, epoch), lr=lr)

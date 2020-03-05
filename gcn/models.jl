@@ -1,5 +1,6 @@
 using Knet: dropout, nll, Data
 using Statistics
+include("layers.jl")
 
 # TODO: Can convert to chain structure
 struct GCN
@@ -11,9 +12,9 @@ end
 GCN(nfeat::Int, nhid::Int, nclass::Int, pdrop=0) = GCN(layer1(nfeat, nhid), layer2(nhid, nclass, identity), pdrop)
 
 function (c::GCN)(x, adj)
-    x = layer1(x, adj)
+    x = c.layer1(x, adj)
     x = dropout(x, c.pdrop)
-    layer2(x, adj)
+    c.layer2(x, adj)
 end
 
 (for l in c.layers; x = l(x); end; x)
