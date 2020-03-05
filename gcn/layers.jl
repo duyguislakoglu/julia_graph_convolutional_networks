@@ -27,7 +27,7 @@ function (g::GraphConvolution)(x, adj)
     mult = sparse(I .+ 1, J .+ 1, V)
     mult = convert(SparseMatrixCSC{Float64,Int64}, mult) 
  
-    print(size((spmatmul(mult, adj) .+ g.b)))
-    g.f.(spmatmul(mult, adj) .+ g.b)
-    
+    spmatmul(mult, adj) .+ g.b 
+    #b = g.f.(spmatmul(mult, adj) .+ g.b)
+ 
 end
