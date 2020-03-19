@@ -4,19 +4,18 @@ include("layers.jl")
 
 # TODO: Can convert to chain structure
 struct GCN
-    layer1::GraphConvolution
-    layer2::GraphConvolution
+    layer1::GCLayer
+    layer2::GCLayer
     pdrop
 end
 
-GCN(nfeat::Int, nhid::Int, nclass::Int, pdrop=0) = GCN(layer1(nfeat, nhid), layer2(nhid, nclass, identity), pdrop)
+GCN(nfeat::Int, nhid::Int, nclass::Int, adj, pdrop=0) = GCN(GCLayer(nfeat, nhid, adj), GCLayer(nhid, nclass, adj, identity), pdrop)
 
-function (c::GCN)(x, adj)
-    x = c.layer1(x, adj)
-    x = dropout(x, c.pdrop)
-    c.layer2(x, adj)
+function (g::GCN)(x)
+    x = g.layer1(x)
+    x = dropout(x, g.pdrop)
+    g.layer2(x)
 end
 
-(for l in c.layers; x = l(x); end; x)
-(c::GCN)(x,y) = nll(c(x),y)
-(c::GCN)(d::Data) = mean(c(x,y) for (x,y) in d)
+(g::GCN)(x,y) = nll(g(x),y)
+(g::GCN)(d::Data) = mean(g(x,y) for (x,y) in d)

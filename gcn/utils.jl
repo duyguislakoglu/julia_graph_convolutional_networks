@@ -2,28 +2,12 @@ using PyCall
 using SparseArrays
 const scipy_sparse_find = pyimport("scipy.sparse")["find"]
 
-py"""
-import numpy as np
-import scipy.sparse as sp
-import torch
-"""
-
 function load()
 # TODO: Change for multiple datasets
     # PyCall
     py"""
 import numpy as np
 import scipy.sparse as sp
-import torch
-    
-def normalize(mx):
-    rowsum = np.array(mx.sum(1))
-    r_inv = np.power(rowsum, -1).flatten()
-    r_inv[np.isinf(r_inv)] = 0.
-    r_mat_inv = sp.diags(r_inv)
-    mx = r_mat_inv.dot(mx)
-    return mx
-    
 
 def encode_onehot(labels):
     classes = set(labels)
@@ -33,6 +17,13 @@ def encode_onehot(labels):
                              dtype=np.int32)
     return labels_onehot
 
+def normalize(mx):
+    rowsum = np.array(mx.sum(1))
+    r_inv = np.power(rowsum, -1).flatten()
+    r_inv[np.isinf(r_inv)] = 0.
+    r_mat_inv = sp.diags(r_inv)
+    mx = r_mat_inv.dot(mx)
+    return mx
 
 def load_data(path="cora/", dataset="cora"):
     #Load citation network dataset (cora only for now)
@@ -60,18 +51,25 @@ def load_data(path="cora/", dataset="cora"):
     features = normalize(features)
     adj = normalize(adj + sp.eye(adj.shape[0]))
 
-    return adj, features, labels
+    return adj, np.transpose(features), labels
     """
 
     adj, features, labels = py"load_data"()
+    
     (I, J, V) = scipy_sparse_find(adj)
     # Zero-indexing issue
     adj = sparse(I .+ 1, J .+ 1, V)
-
+    adj = convert(Array{Float32,2}, adj)
+    adj = KnetArray(adj)
+    #adj = Array(adj)
+    
     (I, J, V) = scipy_sparse_find(features)
     # Zero-indexing issue
     features = sparse(I .+ 1, J .+ 1, V)
-
+    features = convert(Array{Float32,2}, features)
+    features = KnetArray(features)
+    #features = Array(features)
+    
     # TODO: Uncomment the following
     # Normalize feature
     # features = features./sum(features,2)
@@ -79,11 +77,15 @@ def load_data(path="cora/", dataset="cora"):
     #adj += sparse(I, size(adj,1), size(adj,2))
     # Normalize
     #adj = adj./sum(adj,2)
+    
+    #adj = convert(KnetArray{Float32,2}, adj)  
+    #features = convert(KnetArray{Float32,2}, features) 
+    #labels = convert(KnetArray{Float32,2}, labels) 
 
-    # Indexes
     idx_train = 1:140
-    idx_val = 141:500
-    idx_test = 501:size(features,2)
+    idx_val = 200:500
+    #idx_test = 500:size(features,2)
+    idx_test = 500:1500 
 
     return adj, features, labels, idx_train, idx_val, idx_test
 end
