@@ -35,7 +35,7 @@ model = GCN(size(features,1),
             adj,
             arguments.pdrop)
 
-(g::GCN)(x,y) = nll(g(x)[:, idx_train], y[idx_train])
+(g::GCN)(x,y) = nll(g(x)[:, idx_train], y[idx_train]) + (arguments.weight_decay * sum(g.layer1.w**2))  
 
 output = model(features)
 labels_decoded = mapslices(argmax, labels ,dims=2)[:]
