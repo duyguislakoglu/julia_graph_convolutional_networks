@@ -60,14 +60,14 @@ def load_data(path="cora/", dataset="cora"):
     # Zero-indexing issue
     adj = sparse(I .+ 1, J .+ 1, V)
     adj = convert(Array{Float32,2}, adj)
-    adj = KnetArray(adj)
+   # adj = KnetArray(adj)
     #adj = Array(adj)
 
     (I, J, V) = scipy_sparse_find(features)
     # Zero-indexing issue
     features = sparse(I .+ 1, J .+ 1, V)
     features = convert(Array{Float32,2}, features)
-    features = KnetArray(features)
+    #features = KnetArray(features)
     #features = Array(features)
 
     # TODO: Uncomment the following
@@ -82,10 +82,9 @@ def load_data(path="cora/", dataset="cora"):
     #features = convert(KnetArray{Float32,2}, features)
     #labels = convert(KnetArray{Float32,2}, labels)
 
-    idx_train = 1:140
-    idx_val = 200:500
+	idx_train = 1:140
+    idx_val = 200:499
     #idx_test = 500:size(features,2)
-    idx_test = 501:1500 
-
+    idx_test = 500:1499
     return adj, features, labels, idx_train, idx_val, idx_test
 end
