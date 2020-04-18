@@ -75,7 +75,7 @@ def load_data(dataset_str):
     return adj, np.transpose(features), labels, y_train, y_val, y_test, train_mask, val_mask, test_idx_reorder
     """
 
-    adj, features, labels, y_train, y_val, y_test, train_mask, val_mask, test_idx_reorder = py"load_data"("cora")
+    adj, features, labels, y_train, y_val, y_test, train_mask, val_mask, test_idx_reorder = py"load_data"(dataset)
 
     (I, J, V) = scipy_sparse_find(adj)
     # Zero-indexing issue
