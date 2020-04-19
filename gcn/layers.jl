@@ -7,7 +7,8 @@ struct GCLayer
     f
 end
 
-GCLayer(in_features::Int, out_features::Int, adj, f=relu) = GCLayer(param(out_features,in_features), param0(out_features), adj, f)
+GCLayer(in_features::Int, out_features::Int, adj, f=relu) = GCLayer(param(xavier_uniform(out_features,in_features)), param0(out_features), adj, f)
+#GCLayer(in_features::Int, out_features::Int, adj, f=relu) = GCLayer(param(xavier_uniform(out_features,in_features), KnetArray{Float32}), param0(out_features), adj, f)
 
 # Forward and activation
 function (l::GCLayer)(x)
