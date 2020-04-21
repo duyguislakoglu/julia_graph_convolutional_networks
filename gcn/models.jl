@@ -1,9 +1,7 @@
 using Knet: dropout, nll, Data
 using Statistics
 include("layers.jl")
-idx_train=1:140
- 
-# TODO: Can convert to chain structure
+
 struct GCN
     layer1::GCLayer
     layer2::GCLayer
@@ -16,6 +14,6 @@ function (g::GCN)(x)
     x = g.layer1(x)
     x = dropout(x, g.pdrop)
     g.layer2(x)
-end   
+end
 
 (g::GCN)(d::Data) = mean(g(x,y) for (x,y) in d)
