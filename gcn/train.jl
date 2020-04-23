@@ -110,13 +110,14 @@ function train()
     data =  minibatch(features, labels_decoded[:], length(labels_decoded))
 
     iters, trnloss, vallos = mytrain!(model, data, args["epochs"], args["lr"], args["window_size"])
-    plot(iters, [trnloss, vallos] , xlim=(1:3),labels=[:trn :val :tst], xlabel="epochs", ylabel="loss")
+    plot(iters, [trnloss, vallos], labels=[:trn :val], xlabel="Epochs", ylabel="Loss")
 
     png(args["dataset"])
 
     output = model(features)
-    print(accuracy(output[:,idx_train], labels_decoded[idx_train]))
-    print(accuracy(output[:,idx_test], labels_decoded[idx_test]))
+
+    println(accuracy(output[:,idx_train], labels_decoded[idx_train]))
+    println(accuracy(output[:,idx_test], labels_decoded[idx_test]))
 end
 
 train()
