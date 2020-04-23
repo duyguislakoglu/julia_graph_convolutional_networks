@@ -29,13 +29,15 @@ function parse()
         ("--hidden"; arg_type=Int; default=16; help="hidden")
         ("--pdrop"; arg_type=Float64; default=0.5; help="pdrop")
         ("--window_size"; arg_type=Int; default=10; help="window_size")
+        ("--num_of_runs"; arg_type=Int; default=1; help="num_of_runs")
+        ("--save_epoch_num"; arg_type=Int; default=200; help="save_epoch_num")
     end
     return parse_args(s)
 end
 
 args = parse()
 
-function mytrain!(model, data, epochs, lr, window_size)
+function train_with_early_stopping(model, data, epochs, lr, window_size)
     early_stop_counter = 0
     prev_val_loss = 0
     iter = 0
@@ -62,7 +64,7 @@ function mytrain!(model, data, epochs, lr, window_size)
         iter = iter + 1
         prev_val_loss = v_loss
 
-        if iter%25 == 0
+        if iter%args["save_epoch_num"] == 0
             save_path = abspath(args["dataset"]*"-epoch-"*string(iter)*".jld2")
             @save save_path model
             print("The model is saved. Epoch: "* string(iter))
@@ -73,6 +75,7 @@ function mytrain!(model, data, epochs, lr, window_size)
 
     training = adam(model, ncycle(data, epochs), lr=lr)
     progress!(flag = task() for x in (x for (i,x) in enumerate(training)) if flag)
+
     return 1:iter, trnloss, valloss
 end
 
@@ -97,6 +100,12 @@ adj, features, labels, idx_train, idx_val, idx_test = load_dataset(args["dataset
 
 (g::GCN)(x,y) = nll(g(x)[:, idx_train], y[idx_train]) + (args["weight_decay"] * sum(g.layer1.w .* g.layer1.w))
 
+labels_decoded = mapslices(argmax, labels ,dims=2)[:]
+
+data =  minibatch(features, labels_decoded[:], length(labels_decoded))
+
+global trn_acc = 0
+global tst_acc = 0
 
 function train()
     model = GCN(size(features,1),
@@ -105,19 +114,27 @@ function train()
                 adj,
                 args["pdrop"])
 
-    labels_decoded = mapslices(argmax, labels ,dims=2)[:]
-
-    data =  minibatch(features, labels_decoded[:], length(labels_decoded))
-
-    iters, trnloss, vallos = mytrain!(model, data, args["epochs"], args["lr"], args["window_size"])
-    plot(iters, [trnloss, vallos], labels=[:trn :val], xlabel="Epochs", ylabel="Loss")
-
-    png(args["dataset"])
+    iters, trnloss, vallos = train_with_early_stopping(model, data, args["epochs"], args["lr"], args["window_size"])
 
     output = model(features)
+    curr_trn_accuracy = accuracy(output[:,idx_train], labels_decoded[idx_train])
+    curr_tst_accuracy = accuracy(output[:,idx_test], labels_decoded[idx_test])
 
-    println(accuracy(output[:,idx_train], labels_decoded[idx_train]))
-    println(accuracy(output[:,idx_test], labels_decoded[idx_test]))
+    println("Train accuracy: "* string(curr_trn_accuracy))
+    println("Test accuracy: "* string(curr_tst_accuracy))
+
+    global trn_acc =  trn_acc + curr_trn_accuracy
+    global tst_acc =  tst_acc + curr_tst_accuracy
 end
 
-train()
+for i=1:args["num_of_runs"]
+    println("Running... (#"*string(i)*")")
+    train()
+end
+
+print("Train accuracy and test accuracy ")
+if args["num_of_runs"] != 1
+    println("(mean of "*string(args["num_of_runs"])*" runs): ")
+end
+println(trn_acc/args["num_of_runs"])
+println(tst_acc/args["num_of_runs"])
