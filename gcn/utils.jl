@@ -2,7 +2,6 @@ using PyCall
 using SparseArrays
 const scipy_sparse_find = pyimport("scipy.sparse")["find"]
 
-
 function load_dataset(dataset)
     py"""
 import numpy as np
@@ -43,7 +42,9 @@ def sparse_to_tuple(sparse_mx):
     return sparse_mx
 
 def preprocess_features(features):
-    #Row-normalize feature matrix and convert to tuple representation
+    # Added for the integers to negative integer powers problem
+    features = features.astype(float)
+    # Row-normalize feature matrix and convert to tuple representation
     rowsum = np.array(features.sum(1))
     r_inv = np.power(rowsum, -1).flatten()
     r_inv[np.isinf(r_inv)] = 0.
@@ -53,7 +54,9 @@ def preprocess_features(features):
     return features
 
 def normalize_adj(adj):
-    #Symmetrically normalize adjacency matrix.
+    # Added for the integers to negative integer powers problem
+    adj = adj.astype(float)
+    # Symmetrically normalize adjacency matrix.
     adj = sp.coo_matrix(adj)
     rowsum = np.array(adj.sum(1))
     d_inv_sqrt = np.power(rowsum, -0.5).flatten()
@@ -121,21 +124,27 @@ def load_data(dataset_str):
     else:
         features = sp.vstack((allx, tx)).tolil()
         features[test_idx_reorder, :] = features[test_idx_range, :]
-    adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
+
+    # Due to GCN issue#76
+    G = nx.from_dict_of_lists(graph)
+    G = nx.relabel_nodes(G, {i: j for i,j in zip(test_idx_reorder, test_idx_range)})
+    adj = nx.adjacency_matrix(G)
+    #adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
+
     labels = np.vstack((ally, ty))
     labels[test_idx_reorder, :] = labels[test_idx_range, :]
+
     idx_test = test_idx_range.tolist()
     idx_train = range(len(y))
     idx_val = range(len(y), len(y)+500)
 
-    features = np.transpose(features)
     features = preprocess_features(features)
+    features = np.transpose(features)
     adj = preprocess_adj(adj)
 
-    return adj, features, labels, idx_train, idx_val, test_idx_reorder
+    return adj, features, labels, idx_train, idx_val, test_idx_range
     """
     adj, features, labels, idx_train, idx_val, idx_test = py"load_data"(dataset)
-
 
     # Zero-indexing issue
     idx_train = idx_train .+ 1

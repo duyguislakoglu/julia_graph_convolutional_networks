@@ -29,6 +29,7 @@ function parse()
         ("--hidden"; arg_type=Int; default=16; help="hidden")
         ("--pdrop"; arg_type=Float64; default=0.5; help="pdrop")
         ("--window_size"; arg_type=Int; default=10; help="window_size")
+        ("--load_file"; default=""; help="load_file")
         ("--num_of_runs"; arg_type=Int; default=1; help="num_of_runs")
         ("--save_epoch_num"; arg_type=Int; default=200; help="save_epoch_num")
     end
@@ -97,6 +98,8 @@ end
 
 # Load dataset
 adj, features, labels, idx_train, idx_val, idx_test = load_dataset(args["dataset"])
+adj = convert(atype, adj)
+features = convert(atype, features)
 
 (g::GCN)(x,y) = nll(g(x)[:, idx_train], y[idx_train]) + (args["weight_decay"] * sum(g.layer1.w .* g.layer1.w))
 
@@ -114,14 +117,16 @@ function train()
                 adj,
                 args["pdrop"])
 
+    args["load_file"] != "" && @load args["load_file"] model
+
     iters, trnloss, vallos = train_with_early_stopping(model, data, args["epochs"], args["lr"], args["window_size"])
 
     output = model(features)
     curr_trn_accuracy = accuracy(output[:,idx_train], labels_decoded[idx_train])
     curr_tst_accuracy = accuracy(output[:,idx_test], labels_decoded[idx_test])
 
-    println("Train accuracy: "* string(curr_trn_accuracy))
-    println("Test accuracy: "* string(curr_tst_accuracy))
+    println("Train accuracy: " * string(curr_trn_accuracy))
+    println("Test accuracy: " * string(curr_tst_accuracy))
 
     global trn_acc =  trn_acc + curr_trn_accuracy
     global tst_acc =  tst_acc + curr_tst_accuracy
@@ -132,9 +137,9 @@ for i=1:args["num_of_runs"]
     train()
 end
 
-print("Train accuracy and test accuracy ")
+println("Train accuracy and test accuracy ")
 if args["num_of_runs"] != 1
-    println("(mean of "*string(args["num_of_runs"])*" runs): ")
+    println("(mean of " * string(args["num_of_runs"])*" runs): ")
 end
 println(trn_acc/args["num_of_runs"])
 println(tst_acc/args["num_of_runs"])
