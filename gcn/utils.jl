@@ -2,7 +2,7 @@ using PyCall
 using SparseArrays
 const scipy_sparse_find = pyimport("scipy.sparse")["find"]
 
-function load_dataset(dataset)
+function load_dataset(dataset, k=0)
     py"""
 import numpy as np
 import pickle as pkl
@@ -70,7 +70,29 @@ def preprocess_adj(adj):
     #return sparse_to_tuple(adj_normalized)
     return adj_normalized
 
-def load_data(dataset_str):
+def chebyshev_polynomials(adj, k):
+    # Calculate Chebyshev polynomials up to order k. Return a list of sparse matrices (tuple representation).
+    print("Calculating Chebyshev polynomials up to order {}...".format(k))
+
+    adj_normalized = normalize_adj(adj)
+    laplacian = sp.eye(adj.shape[0]) - adj_normalized
+    largest_eigval, _ = eigsh(laplacian, 1, which='LM')
+    scaled_laplacian = (2. / largest_eigval[0]) * laplacian - sp.eye(adj.shape[0])
+
+    t_k = list()
+    t_k.append(sp.eye(adj.shape[0]))
+    t_k.append(scaled_laplacian)
+
+    def chebyshev_recurrence(t_k_minus_one, t_k_minus_two, scaled_lap):
+        s_lap = sp.csr_matrix(scaled_lap, copy=True)
+        return 2 * s_lap.dot(t_k_minus_one) - t_k_minus_two
+
+    for i in range(2, k+1):
+        t_k.append(chebyshev_recurrence(t_k[-1], t_k[-2], scaled_laplacian))
+
+    return t_k[-1]
+
+def load_data(dataset_str, k):
     names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']
     objects = []
     for i in range(len(names)):
@@ -140,11 +162,16 @@ def load_data(dataset_str):
 
     features = preprocess_features(features)
     features = np.transpose(features)
-    adj = preprocess_adj(adj)
+
+    if k != 0:
+        adj = chebyshev_polynomials(adj, k)
+    else:
+        adj = preprocess_adj(adj)
 
     return adj, features, labels, idx_train, idx_val, test_idx_range
     """
-    adj, features, labels, idx_train, idx_val, idx_test = py"load_data"(dataset)
+
+    adj, features, labels, idx_train, idx_val, idx_test = py"load_data"(dataset, k)
 
     # Zero-indexing issue
     idx_train = idx_train .+ 1

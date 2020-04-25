@@ -22,16 +22,18 @@ function parse()
     s = ArgParseSettings()
     s.exc_handler=ArgParse.debug_handler
     @add_arg_table! s begin
-        ("--dataset"; arg_type=AbstractString; default="cora"; help="the name of the dataset")
-        ("--epochs"; arg_type=Int; default=200; help="number of epochs for training")
-        ("--lr"; arg_type=Float64; default=0.01; help="learning rate")
-        ("--weight_decay"; arg_type=Float64; default=5e-4; help="weight_decay")
-        ("--hidden"; arg_type=Int; default=16; help="hidden")
-        ("--pdrop"; arg_type=Float64; default=0.5; help="pdrop")
-        ("--window_size"; arg_type=Int; default=10; help="window_size")
-        ("--load_file"; default=""; help="load_file")
-        ("--num_of_runs"; arg_type=Int; default=1; help="num_of_runs")
-        ("--save_epoch_num"; arg_type=Int; default=200; help="save_epoch_num")
+        ("--dataset"; arg_type=AbstractString; default="cora"; help="The name of the dataset.")
+        ("--model"; arg_type=AbstractString; default="gcn"; help="The name of the model: gcn, gcn_cheby or dense")
+        ("--epochs"; arg_type=Int; default=200; help="Number of epochs to train.")
+        ("--lr"; arg_type=Float64; default=0.01; help="Initial learning rate.")
+        ("--weight_decay"; arg_type=Float64; default=5e-4; help="Weight for L2 loss on embedding matrix.")
+        ("--hidden"; arg_type=Int; default=16; help="Number of units in hidden layer.")
+        ("--pdrop"; arg_type=Float64; default=0.5; help="Dropout rate (1 - keep probability).")
+        ("--window_size"; arg_type=Int; default=10; help="Tolerance for early stopping (# of epochs).'")
+        ("--load_file"; default=""; help="The path to load a saved model.")
+        ("--num_of_runs"; arg_type=Int; default=1; help="The number of randomly initialized runs.")
+        ("--save_epoch_num"; arg_type=Int; default=250; help="The number of epochs to save the model.")
+        ("--chebyshev_max_degree"; arg_type=Int; default=0; help="Maximum Chebyshev polynomial degree.")
     end
     return parse_args(s)
 end
@@ -68,7 +70,7 @@ function train_with_early_stopping(model, data, epochs, lr, window_size)
         if iter%args["save_epoch_num"] == 0
             save_path = abspath(args["dataset"]*"-epoch-"*string(iter)*".jld2")
             @save save_path model
-            print("The model is saved. Epoch: "* string(iter))
+            print("\nThe model is saved. Epoch: "* string(iter))
         end
 
         return flag
@@ -80,27 +82,29 @@ function train_with_early_stopping(model, data, epochs, lr, window_size)
     return 1:iter, trnloss, valloss
 end
 
-function val_loss(g::GCN,x,y)
-    output = g(x)[:, idx_val]
-    nll(output, y[idx_val]) + (args["weight_decay"] * sum(g.layer1.w .* g.layer1.w))
+function val_loss(model,x,y)
+    output = model(x)[:, idx_val]
+    nll(output, y[idx_val]) + (args["weight_decay"] * sum(model.layer1.w .* model.layer1.w))
 end
-function val_loss(g::GCN, d)
-    mean(val_loss(g,x,y) for (x,y) in d)
+function val_loss(model, d)
+    mean(val_loss(model,x,y) for (x,y) in d)
 end
 
-function test_loss(g::GCN,x,y)
-    output = g(x)[:, idx_test]
-    nll(output, y[idx_test]) + (args["weight_decay"] * sum(g.layer1.w .* g.layer1.w))
+function test_loss(model,x,y)
+    output = model(x)[:, idx_test]
+    nll(output, y[idx_test]) + (args["weight_decay"] * sum(model.layer1.w .* model.layer1.w))
 end
-function test_loss(g::GCN,d)
-    mean(test_loss(g,x,y) for (x,y) in d)
+function test_loss(model,d)
+    mean(test_loss(model,x,y) for (x,y) in d)
 end
 
 # Load dataset
-adj, features, labels, idx_train, idx_val, idx_test = load_dataset(args["dataset"])
-adj = convert(atype, adj)
+
+adj, features, labels, idx_train, idx_val, idx_test = load_dataset(args["dataset"], args["chebyshev_max_degree"])
+global adj = convert(atype, adj)
 features = convert(atype, features)
 
+(m::MLP)(x,y) = nll(m(x)[:, idx_train], y[idx_train]) + (args["weight_decay"] * sum(m.layer1.w .* m.layer1.w))
 (g::GCN)(x,y) = nll(g(x)[:, idx_train], y[idx_train]) + (args["weight_decay"] * sum(g.layer1.w .* g.layer1.w))
 
 labels_decoded = mapslices(argmax, labels ,dims=2)[:]
@@ -111,15 +115,27 @@ global trn_acc = 0
 global tst_acc = 0
 
 function train()
-    model = GCN(size(features,1),
-                args["hidden"],
-                size(labels,2),
-                adj,
-                args["pdrop"])
+    if  args["model"] == "mlp"
+        model = MLP(size(features,1),
+                    args["hidden"],
+                    size(labels,2),
+                    args["pdrop"])
+    else
+        model = GCN(size(features,1),
+                    args["hidden"],
+                    size(labels,2),
+                    adj,
+                    args["pdrop"])
+    end
 
     args["load_file"] != "" && @load args["load_file"] model
 
-    iters, trnloss, vallos = train_with_early_stopping(model, data, args["epochs"], args["lr"], args["window_size"])
+    iters, trnloss, valloss = train_with_early_stopping(model, data, args["epochs"], args["lr"], args["window_size"])
+
+    if args["num_of_runs"] == 1
+        plot(iters, [trnloss, valloss],labels=[:trn :val], xlabel="epochs", ylabel="loss")
+        png(args["dataset"])
+    end
 
     output = model(features)
     curr_trn_accuracy = accuracy(output[:,idx_train], labels_decoded[idx_train])
@@ -141,5 +157,6 @@ println("Train accuracy and test accuracy ")
 if args["num_of_runs"] != 1
     println("(mean of " * string(args["num_of_runs"])*" runs): ")
 end
+
 println(trn_acc/args["num_of_runs"])
 println(tst_acc/args["num_of_runs"])
