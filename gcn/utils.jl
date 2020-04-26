@@ -89,8 +89,7 @@ def chebyshev_polynomials(adj, k):
 
     for i in range(2, k+1):
         t_k.append(chebyshev_recurrence(t_k[-1], t_k[-2], scaled_laplacian))
-
-    return t_k[-1]
+    return t_k
 
 def load_data(dataset_str, k):
     names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']
@@ -178,9 +177,19 @@ def load_data(dataset_str, k):
     idx_val = idx_val .+ 1
     idx_test = idx_test .+ 1
 
-    (I, J, V) = scipy_sparse_find(adj)
-    # Zero-indexing issue
-    adj = sparse(I .+ 1, J .+ 1, V)
+    if k==0
+        (I, J, V) = scipy_sparse_find(adj)
+        # Zero-indexing issue
+        adj = sparse(I .+ 1, J .+ 1, V)
+    else
+        #tmp = copy(adj)
+        #adj = SparseMatrixCSC{Float32,Int64}[]
+        for i=1:length(adj)
+            (I, J, V) = scipy_sparse_find(adj[i])
+            #append!(adj, sparse(I .+ 1, J .+ 1, V))
+            adj[i] = sparse(I .+ 1, J .+ 1, V)
+        end
+    end
 
     (I, J, V) = scipy_sparse_find(features)
     # Zero-indexing issue

@@ -101,11 +101,22 @@ end
 # Load dataset
 
 adj, features, labels, idx_train, idx_val, idx_test = load_dataset(args["dataset"], args["chebyshev_max_degree"])
-global adj = convert(atype, adj)
+
+if atype == KnetArray{Float32,2}
+    if args["chebyshev_max_degree"]==0
+        global adj = convert(atype, adj)
+    else
+        for i=1:length(adj)
+            adj[i] = convert(atype, adj[i])
+        end
+    end
+end
 features = convert(atype, features)
+
 
 (m::MLP)(x,y) = nll(m(x)[:, idx_train], y[idx_train]) + (args["weight_decay"] * sum(m.layer1.w .* m.layer1.w))
 (g::GCN)(x,y) = nll(g(x)[:, idx_train], y[idx_train]) + (args["weight_decay"] * sum(g.layer1.w .* g.layer1.w))
+(g::GCN2)(x,y) = nll(g(x)[:, idx_train], y[idx_train])
 
 labels_decoded = mapslices(argmax, labels ,dims=2)[:]
 
@@ -121,7 +132,7 @@ function train()
                     size(labels,2),
                     args["pdrop"])
     else
-        model = GCN(size(features,1),
+        model = GCN2(size(features,1),
                     args["hidden"],
                     size(labels,2),
                     adj,
