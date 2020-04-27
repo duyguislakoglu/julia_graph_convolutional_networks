@@ -86,21 +86,57 @@ function val_loss(model,x,y)
     output = model(x)[:, idx_val]
     nll(output, y[idx_val]) + (args["weight_decay"] * sum(model.layer1.w .* model.layer1.w))
 end
-function val_loss(model, d)
-    mean(val_loss(model,x,y) for (x,y) in d)
-end
 
 function test_loss(model,x,y)
     output = model(x)[:, idx_test]
     nll(output, y[idx_test]) + (args["weight_decay"] * sum(model.layer1.w .* model.layer1.w))
+end
+
+##################################
+
+if args["chebyshev_max_degree"]  ==  2
+
+    function val_loss(model,x,y)
+        output = model(x)[:, idx_val]
+        nll(output, y[idx_val]) + (args["weight_decay"] * sum(model.layer1.w1 .* model.layer1.w1)) + (args["weight_decay"] * sum(model.layer1.w2 .* model.layer1.w2)) + (args["weight_decay"] * sum(model.layer1.w3 .* model.layer1.w3))
+    end
+
+    function test_loss(model,x,y)
+        output = model(x)[:, idx_test]
+        nll(output, y[idx_test]) + (args["weight_decay"] * sum(model.layer1.w1 .* model.layer1.w1)) + (args["weight_decay"] * sum(model.layer1.w2 .* model.layer1.w2)) + (args["weight_decay"] * sum(model.layer1.w3 .* model.layer1.w3))
+            + (args["weight_decay"] * sum(model.layer1.w4 .* model.layer1.w4))
+    end
+
+elseif args["chebyshev_max_degree"]  ==  3
+
+    function val_loss(model,x,y)
+        output = model(x)[:, idx_val]
+        nll(output, y[idx_val])
+    end
+
+    function test_loss(model,x,y)
+        output = model(x)[:, idx_test]
+        nll(output, y[idx_test])
+    end
+end
+
+##################################
+
+function val_loss(model, d)
+    mean(val_loss(model,x,y) for (x,y) in d)
 end
 function test_loss(model,d)
     mean(test_loss(model,x,y) for (x,y) in d)
 end
 
 # Load dataset
-
-adj, features, labels, idx_train, idx_val, idx_test = load_dataset(args["dataset"], args["chebyshev_max_degree"])
+if args["chebyshev_max_degree"] == 0
+    adj, features, labels, idx_train, idx_val, idx_test = load_dataset(args["dataset"], args["chebyshev_max_degree"])
+elseif args["chebyshev_max_degree"] == 2
+    adj1, adj2, adj3, features, labels, idx_train, idx_val, idx_test = load_dataset(args["dataset"], args["chebyshev_max_degree"])
+elseif args["chebyshev_max_degree"] == 3
+    adj1, adj2, adj3, adj4, features, labels, idx_train, idx_val, idx_test = load_dataset(args["dataset"], args["chebyshev_max_degree"])
+end
 
 if atype == KnetArray{Float32,2}
     if args["chebyshev_max_degree"]==0
@@ -116,7 +152,8 @@ features = convert(atype, features)
 
 (m::MLP)(x,y) = nll(m(x)[:, idx_train], y[idx_train]) + (args["weight_decay"] * sum(m.layer1.w .* m.layer1.w))
 (g::GCN)(x,y) = nll(g(x)[:, idx_train], y[idx_train]) + (args["weight_decay"] * sum(g.layer1.w .* g.layer1.w))
-(g::GCN2)(x,y) = nll(g(x)[:, idx_train], y[idx_train])
+(g::GCN2)(x,y) = nll(g(x)[:, idx_train], y[idx_train]) + (args["weight_decay"] * sum(g.layer1.w1 .* g.layer1.w1)) + (args["weight_decay"] * sum(g.layer1.w2 .* g.layer1.w2)) + (args["weight_decay"] * sum(g.layer1.w3 .* g.layer1.w3))
+(g::GCN3)(x,y) = nll(g(x)[:, idx_train], y[idx_train]) + (args["weight_decay"] * sum(g.layer1.w1 .* g.layer1.w1)) + (args["weight_decay"] * sum(g.layer1.w2 .* g.layer1.w2)) + (args["weight_decay"] * sum(g.layer1.w3 .* g.layer1.w3)) + (args["weight_decay"] * sum(g.layer1.w4 .* g.layer1.w4))
 
 labels_decoded = mapslices(argmax, labels ,dims=2)[:]
 
@@ -131,11 +168,22 @@ function train()
                     args["hidden"],
                     size(labels,2),
                     args["pdrop"])
-    else
+    elseif  args["chebyshev_max_degree"] == 2
         model = GCN2(size(features,1),
                     args["hidden"],
                     size(labels,2),
-                    adj,
+                    adj1,
+                    adj2,
+                    adj3,
+                    args["pdrop"])
+    elseif args["chebyshev_max_degree"] == 3
+        model = GCN3(size(features,1),
+                    args["hidden"],
+                    size(labels,2),
+                    adj1,
+                    adj2,
+                    adj3,
+                    adj4,
                     args["pdrop"])
     end
 

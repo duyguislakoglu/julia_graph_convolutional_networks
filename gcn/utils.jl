@@ -170,7 +170,7 @@ def load_data(dataset_str, k):
     return adj, features, labels, idx_train, idx_val, test_idx_range
     """
 
-    adj, features, labels, idx_train, idx_val, idx_test = py"load_data"(dataset, k)
+    adj_, features, labels, idx_train, idx_val, idx_test = py"load_data"(dataset, k)
 
     # Zero-indexing issue
     idx_train = idx_train .+ 1
@@ -178,22 +178,37 @@ def load_data(dataset_str, k):
     idx_test = idx_test .+ 1
 
     if k==0
-        (I, J, V) = scipy_sparse_find(adj)
+        (I, J, V) = scipy_sparse_find(adj_)
         # Zero-indexing issue
         adj = sparse(I .+ 1, J .+ 1, V)
+        convert(atype, adj)
     else
-        #tmp = copy(adj)
-        #adj = SparseMatrixCSC{Float32,Int64}[]
-        for i=1:length(adj)
-            (I, J, V) = scipy_sparse_find(adj[i])
-            #append!(adj, sparse(I .+ 1, J .+ 1, V))
-            adj[i] = sparse(I .+ 1, J .+ 1, V)
+        (I, J, V) = scipy_sparse_find(adj_[1])
+        adj1 = sparse(I .+ 1, J .+ 1, V)
+#        convert(atype, adj1)
+        (I, J, V) = scipy_sparse_find(adj_[2])
+        adj2 = sparse(I .+ 1, J .+ 1, V)
+#        convert(atype, adj2)
+        (I, J, V) = scipy_sparse_find(adj_[3])
+        adj3 = sparse(I .+ 1, J .+ 1, V)
+#       convert(atype, adj3)
+        if k==3
+            (I, J, V) = scipy_sparse_find(adj_[4])
+            adj4 = sparse(I .+ 1, J .+ 1, V)
+    #       convert(atype, adj4)
         end
     end
 
     (I, J, V) = scipy_sparse_find(features)
     # Zero-indexing issue
     features = sparse(I .+ 1, J .+ 1, V)
+#    convert(atype, features)
 
-    return adj, features, labels, idx_train, idx_val, idx_test
+    if k==0
+        return adj, features, labels, idx_train, idx_val, idx_test
+    elseif k==2
+        return adj1, adj2, adj3, features, labels, idx_train, idx_val, idx_test
+    elseif k==3
+        return adj1, adj2, adj3, adj4, features, labels, idx_train, idx_val, idx_test
+    end
 end

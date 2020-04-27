@@ -51,7 +51,7 @@ struct GCN2
 end
 
 # Constructor
-GCN2(nfeat::Int, nhid::Int, nclass::Int, support, pdrop=0) = GCN2(GCLayer2(nfeat, nhid, support), GCLayer2(nhid, nclass, support, identity), pdrop)
+GCN2(nfeat::Int, nhid::Int, nclass::Int, adj1, adj2, adj3, pdrop=0) = GCN2(GCLayer2(nfeat, nhid, adj1, adj2, adj3), GCLayer2(nhid, nclass, adj1, adj2, adj3, identity), pdrop)
 
 # Forward
 function (g::GCN2)(x)
@@ -63,3 +63,25 @@ end
 # Loss
 # (g::GCN2)(x,y) is defined in train.jl
 (g::GCN2)(d::Data) = mean(g(x,y) for (x,y) in d)
+
+################################################################################
+# Architecture
+struct GCN3
+    layer1::GCLayer3
+    layer2::GCLayer3
+    pdrop
+end
+
+# Constructor
+GCN3(nfeat::Int, nhid::Int, nclass::Int, adj1, adj2, adj3, adj4, pdrop=0) =  GCN3(GCLayer3(nfeat, nhid, adj1, adj2, adj3, adj4), GCLayer3(nhid, nclass, adj1, adj2, adj3, adj4, identity), pdrop)
+
+# Forward
+function (g::GCN3)(x)
+    x = g.layer1(x)
+    x = dropout(x, g.pdrop)
+    g.layer2(x)
+end
+
+# Loss
+# (g::GCN3)(x,y) is defined in train.jl
+(g::GCN3)(d::Data) = mean(g(x,y) for (x,y) in d)

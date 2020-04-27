@@ -33,30 +33,85 @@ DenseLayer(in_features::Int, out_features::Int, f=relu, pdrop=0) = DenseLayer(pa
 #################################################
 
 struct GCLayer2
-    weight_list
-    b_list
-    support
+    w1
+    w2
+    w3
+    b
+    adj1
+    adj2
+    adj3
     f
 end
 
 # Constructor
-function GCLayer2(in_features::Int, out_features::Int, support, f=relu)
-    weight_list = []
-    b_list = []
+function GCLayer2(in_features::Int, out_features::Int, adj1, adj2, adj3, f=relu)
 
-    for i=1:length(support)
-        append!(weight_list, param(xavier_uniform(out_features,in_features)))
-        append!(b_list, param0(out_features))
-    end
-    GCLayer2(weight_list, b_list, support, f)
+    w1 = param(xavier_uniform(out_features,in_features))
+    w2 = param(xavier_uniform(out_features,in_features))
+    w3 = param(xavier_uniform(out_features,in_features))
+    b = param0(out_features)
+    GCLayer2(w1,w2,w3,b,adj1,adj2,adj3,f)
+
 end
 
 # Forward and activation
 function (l::GCLayer2)(x)
-    out = zeros(size(l.weight_list[1],1), size(x,2))
-    for i=1:length(l.support)
-        mult = (l.weight_list[i] * x)
-        out = out .+ (mult * l.support .+ l.b_list[i])
-    end
+
+    out = zeros(size(l.w1,1), size(x,2))
+
+    mult = (l.w1 * x)
+    out = out .+ (mult * l.adj1)
+
+    mult = (l.w2 * x)
+    out = out .+ (mult * l.adj2)
+
+    mult = (l.w3 * x)
+    out = out .+ (mult * l.adj3 .+ l.b)
+
+    l.f.(out)
+end
+
+#################################################
+
+struct GCLayer3
+    w1
+    w2
+    w3
+    w4
+    b
+    adj1
+    adj2
+    adj3
+    adj4
+    f
+end
+
+# Constructor
+function GCLayer3(in_features::Int, out_features::Int, adj1, adj2, adj3, adj4, f=relu)
+    w1 = param(xavier_uniform(out_features,in_features))
+    w2 = param(xavier_uniform(out_features,in_features))
+    w3 = param(xavier_uniform(out_features,in_features))
+    w4 = param(xavier_uniform(out_features,in_features))
+    b = param0(out_features)
+    GCLayer3(w1,w2,w3,w4,b,adj1,adj2,adj3,adj4,f)
+end
+
+# Forward and activation
+function (l::GCLayer3)(x)
+
+    out = zeros(size(l.w1,1), size(x,2))
+
+    mult = (l.w1 * x)
+    out = out .+ (mult * l.adj1)
+
+    mult = (l.w2 * x)
+    out = out .+ (mult * l.adj2)
+
+    mult = (l.w3 * x)
+    out = out .+ (mult * l.adj3 .+ l.b)
+
+    mult = (l.w4 * x)
+    out = out .+ (mult * l.adj4 .+ l.b)
+
     l.f.(out)
 end
