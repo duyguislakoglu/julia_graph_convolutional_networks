@@ -185,6 +185,12 @@ function train()
                     adj3,
                     adj4,
                     args["pdrop"])
+    else
+        model = GCN(size(features,1),
+                    args["hidden"],
+                    size(labels,2),
+                    adj,
+                    args["pdrop"])
     end
 
     args["load_file"] != "" && @load args["load_file"] model

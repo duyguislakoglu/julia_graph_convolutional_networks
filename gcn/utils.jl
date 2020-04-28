@@ -171,6 +171,7 @@ def load_data(dataset_str, k):
     """
 
     adj_, features, labels, idx_train, idx_val, idx_test = py"load_data"(dataset, k)
+    atype = gpu() >= 0 ? KnetArray{Float32,2} : SparseMatrixCSC{Float32,Int64}
 
     # Zero-indexing issue
     idx_train = idx_train .+ 1
