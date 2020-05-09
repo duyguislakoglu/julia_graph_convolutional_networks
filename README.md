@@ -32,7 +32,7 @@ The Julia/Knet implementation of [<span class="underline">Semi-supervised Classi
 [<span class="underline">https://github.com/tkipf/pygcn</span>](https://github.com/tkipf/pygcn)
 
 
-**Datasets:**![](/media/image1.png)
+**Datasets:**
 
 **1-** [<span class="underline">Citeseer</span>](https://github.com/kimiyoung/planetoid/tree/master/data)
 
