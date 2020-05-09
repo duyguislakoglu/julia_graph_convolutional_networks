@@ -1,10 +1,21 @@
 Thomas N. Kipf, Max Welling. 2017, [<span class="underline">Semi-supervised Classification With Graph Convolutional Networks</span>](https://arxiv.org/pdf/1609.02907.pdf), In *International Conference on Learning Representations (ICLR)*
 
-**Code:**
+## Requirements
+
+  * KNET
+
+## Usage
+
+```julia train.jl```
+
+
+
+**Original Code:**
 
 [<span class="underline">https://github.com/tkipf/gcn</span>](https://github.com/tkipf/gcn)
 
 [<span class="underline">https://github.com/tkipf/pygcn</span>](https://github.com/tkipf/pygcn)
+
 
 **Datasets:**![](/media/image1.png)
 
