@@ -1,11 +1,6 @@
 
 The Julia/Knet implementation of [<span class="underline">Semi-supervised Classification With Graph Convolutional Networks</span>](https://arxiv.org/pdf/1609.02907.pdf) [1].
 
-## Requirements
-
-  * Julia
-  * KNET
-
 ## Usage
 
 ```julia train.jl```
