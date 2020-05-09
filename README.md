@@ -9,7 +9,6 @@ Thomas N. Kipf, Max Welling. 2017, [<span class="underline">Semi-supervised Clas
 ```julia train.jl```
 
 
-
 **Original Code:**
 
 [<span class="underline">https://github.com/tkipf/gcn</span>](https://github.com/tkipf/gcn)
@@ -42,23 +41,3 @@ Thomas N. Kipf, Max Welling. 2017, [<span class="underline">Semi-supervised Clas
 5.  > Planetoid (Yang et al., 2016)
 
 6.  > Iterative classification algorithm (ICA) (Lu & Getoor, 2003)
-
-
-
-**State-of-the-art**
-
-> **1- Citeseer**
-
-![](media/image2.png)
-
-> **2- Cora**
-
-![](media/image4.png)
-
-**3- PubMed**
-
-![](media/image6.png)
-
-> **4- NELL**
-
-![](media/image3.png)
