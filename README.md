@@ -8,6 +8,20 @@ Thomas N. Kipf, Max Welling. 2017, [<span class="underline">Semi-supervised Clas
 
 ```julia train.jl```
 
+## Parameters
+
+        ("--dataset"; arg_type=AbstractString; default="cora"; help="The name of the dataset.")
+        ("--model"; arg_type=AbstractString; default="gcn"; help="The name of the model: gcn, gcn_cheby or dense")
+        ("--epochs"; arg_type=Int; default=200; help="Number of epochs to train.")
+        ("--lr"; arg_type=Float64; default=0.01; help="Initial learning rate.")
+        ("--weight_decay"; arg_type=Float64; default=5e-4; help="Weight for L2 loss on embedding matrix.")
+        ("--hidden"; arg_type=Int; default=16; help="Number of units in hidden layer.")
+        ("--pdrop"; arg_type=Float64; default=0.5; help="Dropout rate (1 - keep probability).")
+        ("--window_size"; arg_type=Int; default=10; help="Tolerance for early stopping (# of epochs).'")
+        ("--load_file"; default=""; help="The path to load a saved model.")
+        ("--num_of_runs"; arg_type=Int; default=1; help="The number of randomly initialized runs.")
+        ("--save_epoch_num"; arg_type=Int; default=250; help="The number of epochs to save the model.")
+        ("--chebyshev_max_degree"; arg_type=Int; default=0; help="Maximum Chebyshev polynomial degree.")
 
 **Original Code:**
 
