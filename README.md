@@ -40,19 +40,3 @@ Thomas N. Kipf, Max Welling. 2017, [<span class="underline">Semi-supervised Clas
 **3-** [<span class="underline">Pubmed</span>](https://github.com/kimiyoung/planetoid/tree/master/data)
 
 **4-** [<span class="underline">NELL</span>](http://www.cs.cmu.edu/~zhiliny/data/nell_data.tar.gz)
-
-**Baselines**
-
-**1- Semi-Supervised Node Classification**
-
-1.  > Label propagation (LP) (Zhu et al., 2003)
-
-2.  > Semi-supervised embedding (SemiEmb) (Weston et al., 2012)
-
-3.  > Manifold regularization (ManiReg) (Belkin et al., 2006)
-
-4.  > Skip-gram based graph embeddings (DeepWalk) (Perozzi et al., 2014)
-
-5.  > Planetoid (Yang et al., 2016)
-
-6.  > Iterative classification algorithm (ICA) (Lu & Getoor, 2003)
