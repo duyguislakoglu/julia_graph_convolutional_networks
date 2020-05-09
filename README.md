@@ -2,6 +2,7 @@ Thomas N. Kipf, Max Welling. 2017, [<span class="underline">Semi-supervised Clas
 
 ## Requirements
 
+  * JULIA
   * KNET
 
 ## Usage
