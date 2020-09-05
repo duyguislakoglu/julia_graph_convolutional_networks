@@ -10,7 +10,7 @@ The Julia/Knet implementation of [<span class="underline">Semi-supervised Classi
       --dataset: The name of the dataset
       --model: The name of the model: gcn, gcn_cheby or dense
       --epochs: Number of epochs to train
-      --lr: Initial learning rate.
+      --lr: Initial learning rate
       --weight_decay: Weight for L2 loss on embedding matrix
       --hidden: Number of units in hidden layer
       --pdrop: Dropout rate (1 - keep probability) 
