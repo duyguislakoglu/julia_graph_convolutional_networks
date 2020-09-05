@@ -40,6 +40,8 @@ The Julia/Knet implementation of [<span class="underline">Semi-supervised Classi
 
 **4-** [<span class="underline">NELL</span>](http://www.cs.cmu.edu/~zhiliny/data/nell_data.tar.gz)
 
+https://github.com/kimiyoung/planetoid
+
 ## References
 
 [1] Thomas N. Kipf, Max Welling. 2017, [<span class="underline">Semi-supervised Classification With Graph Convolutional Networks</span>](https://arxiv.org/pdf/1609.02907.pdf), In *International Conference on Learning Representations (ICLR)*
