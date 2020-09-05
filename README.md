@@ -20,6 +20,9 @@ The Julia/Knet implementation of [<span class="underline">Semi-supervised Classi
       --save_epoch_num: The number of epochs to save the model 
       --chebyshev_max_degree: Maximum Chebyshev polynomial degree 
 
+## Colab 
+[<span class="underline">Colab</span>](https://colab.research.google.com/drive/1yoe5yyJg-7gJ70Zp2AcIG0X1ey_XOoK3?authuser=1#scrollTo=Xd2rEUHRuFkn&uniqifier=2)
+
 **Original Code:**
 
 [<span class="underline">https://github.com/tkipf/gcn</span>](https://github.com/tkipf/gcn)
